@@ -45,10 +45,18 @@ int __I2C_txbyte_m0(byte slave_address, byte data) {
     return 0;                               // Retorno = 0 significa sucesso
 }
 
+
+int __I2C_rxbyte_m0(byte slave_address, byte data) {
+    // TODO
+}
+
 int __I2C_txbyte_m1(byte slave_address, byte data) {
     return 1;
 }
 
+int __I2C_rxbyte_m1(byte slave_address, byte data) {
+    return 1;
+}
 
 void I2C_config(byte module, byte master, byte internal_res, unsigned int baud_rate) {
     if (module == 0) {
@@ -65,5 +73,14 @@ int I2C_txbyte(byte module, byte slave_address, byte data) {
     }
     if (module == 1) {
         return __I2C_txbyte_m1(slave_address, data);
+    }
+}
+
+int I2C_rxbyte(byte module, byte slave_address) {
+    if (module == 0) {
+        return __I2C_rxbyte_m0(slave_address);
+    }
+    if (module == 1) {
+        return __I2C_rxbyte_m1(slave_address);
     }
 }

@@ -26,6 +26,13 @@ typedef unsigned char byte;
  * - Recomendado: 9600
  * */
 void I2C_config(byte module, byte master, byte internal_res, unsigned int baud_rate);
-int I2C_txbyte(byte module, byte slave_address, byte data);
+
+int  I2C_txbyte(byte module, byte slave_address, byte data);
+
+/**
+ * Função que lê um byte no canal I2C.
+ * Retorna -1 em caso de erro ou o byte lido em caso de sucesso.
+ */
+int  I2C_rxbyte(byte module, byte slave_address);
 
 #endif /* I2C_UTILS_H_ */
