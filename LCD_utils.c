@@ -28,17 +28,6 @@ void LCD_txbyte(byte data, byte rs) {
     LCD_txnibble(data & 0x0F, rs);
 }
 
-void LCD_customchars() {
-    LCD_txbyte(0x40, 0);
-    byte i, j;
-    for (i = 0; i<8; i++){
-        for (j=0;j<8;j++){
-            LCD_txbyte(j==i?0xFF:0x00, 1);
-        }
-    }
-    LCD_txbyte(0x80, 0);
-}
-
 void LCD_config() {
     while(!LCD_address) {
         LCD_address = LCD_findAddress();

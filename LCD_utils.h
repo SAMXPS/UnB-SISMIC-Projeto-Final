@@ -11,6 +11,5 @@ void LCD_goto_line(byte line);
 void LCD_clear();
 void LCD_print(char* data);
 void LCD_config();
-void LCD_customchars();
 
 #endif /* LCD_UTILS_H_ */
