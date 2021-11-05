@@ -46,15 +46,42 @@ int __I2C_txbyte_m0(byte slave_address, byte data) {
 }
 
 
-int __I2C_rxbyte_m0(byte slave_address, byte data) {
-    // TODO
+int __I2C_rxbyte_m0(byte slave_address) {
+    UCB0CTL1 &= ~UCTR;                      // receiver mode
+    UCB0I2CSA = slave_address;              // slave address
+
+    //Espero a linha estar desocupada.
+    while (UCB1STAT & UCBBUSY);
+
+    UCB0CTL1 |= UCTXSTT;                    // start condition
+
+    while((UCB0CTL1 & UCTXSTT) &&           // Aguarda fim do START/NACK
+          !(UCB0IFG & UCNACKIFG));
+
+    if (UCB0IFG & UCNACKIFG) {
+        UCB0CTLW0 |= UCTXSTP;               // pedir um stop
+        while(UCB0CTLW0 & UCTXSTP);         // eu peço um stop e espero o stop
+        return -1;                          // ser enviado antes de retornar
+    }
+
+    while(!(UCB0IFG & UCRXIFG));            // Aguarda a leitura
+
+    int data = UCB0RXBUF<<8;                // Lê dados do buffer de recepção
+    UCB0CTLW0 |= UCTXSTP;                   // pedir um stop
+
+    while(!(UCB0IFG & UCRXIFG));            // Aguarda a leitura
+    data |= UCB0RXBUF;
+
+    while(UCB0CTLW0 & UCTXSTP);             // Espera o stop ser enviado para retornar
+
+    return data;                            // Retorna os dados
 }
 
 int __I2C_txbyte_m1(byte slave_address, byte data) {
     return 1;
 }
 
-int __I2C_rxbyte_m1(byte slave_address, byte data) {
+int __I2C_rxbyte_m1(byte slave_address) {
     return 1;
 }
 
