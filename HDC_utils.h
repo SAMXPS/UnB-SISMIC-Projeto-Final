@@ -11,13 +11,9 @@
 void HDC_config();
 
 /**
- * Função que lê temperatura.
+ * Função que lê temperatura e humidade.
+ * Retorna 0 em caso de erro de comunicação.
  */
-int  HDC_readTemperature();
-
-/**
- * Função que lê humidade.
- */
-int  HDC_readHumidity();
+int  HDC_read(word* temperature, word* humidity);
 
 #endif /* HDC_UTILS_H_ */

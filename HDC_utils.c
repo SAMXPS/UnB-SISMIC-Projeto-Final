@@ -13,7 +13,6 @@
 #define HDC_REG_MID         0xFE // Manufacturer ID 0x5449 ID of Texas Instruments.
 #define HDC_REG_DID         0xFF // Device ID       0x1050 ID of the device.
 
-
 void HDC_config() {
     // TODO: custom configuration ?
     int conf = 0;
@@ -32,10 +31,10 @@ void HDC_config() {
     }
 }
 
-int  HDC_readTemperature() {
+int  HDC_read(word* temperature, word* humidity) {
     // Escrevendo endereço do registrador de temperatura no Pointer Register
-    if (I2C_txbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS, HDC_REG_MID)){
-        return -1;
+    if (I2C_txbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS, HDC_REG_TEMPERATURE)){
+        return 0;
     }
 
     // Agora devemos esperar o tempo de medição:
@@ -43,11 +42,22 @@ int  HDC_readTemperature() {
     // 11 bit resolution 3.850 ms = 3850 us
     // 14 bit resolution 6.500 ms = 6500 us
     delay_us(6500);
+    // Esperar leitura de humidade
+    delay_us(6500);
+    // Tempo extra, por que não?
+    delay_us(6500);
+    if (I2C_rxword(HDC_I2C_PORT, HDC_I2C_ADDRESS, temperature) == -1) {
+        return 0;
+    }
 
-    return I2C_rxbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS);
-}
+    // Escrevendo endereço do registrador de humidade no Pointer Register
+    if (I2C_txbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS, HDC_REG_HUMITY)){
+        return 0;
+    }
 
-int  HDC_readHumidity() {
-    // TODO
-    return 0;
+    if (I2C_rxword(HDC_I2C_PORT, HDC_I2C_ADDRESS, humidity) == -1) {
+        return 0;
+    }
+
+    return 1;
 }
