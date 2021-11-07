@@ -45,8 +45,61 @@ int __I2C_txbyte_m0(byte slave_address, byte data) {
     return 0;                               // Retorno = 0 significa sucesso
 }
 
+int __I2C_txword_m0(byte slave_address, word data) {
+    UCB0I2CSA = slave_address;              // slave address
+    UCB0CTL1 |= UCTR;                       // transmitter mode
+    UCB0CTL1 |= UCTXSTT;                    // start condition
+    while (!(UCB0IFG & UCTXIFG));           // wait start
+    UCB0TXBUF = data>>8;
+
+    while(!(UCB0IFG & UCTXIFG) &&           // Aguarda ACK/NACK
+          !(UCB0IFG & UCNACKIFG));
+
+    if(UCB0IFG & UCNACKIFG) {
+        UCB0CTLW0 |= UCTXSTP;               // Se o escravo nÆo respondeu
+        while(UCB0CTLW0 & UCTXSTP);         // eu pe‡o um stop e espero o stop
+        return 1;                           // ser enviado antes de retornar
+    }
+
+    while(!(UCB0IFG & UCTXIFG));            // Espera enviar o £ltimo bit para
+    UCB0TXBUF = data&0xFF;                  // enviar o segundo byte
+
+    while(!(UCB0IFG & UCTXIFG));            // Espera enviar o £ltimo bit para
+    UCB0CTLW0 |= UCTXSTP;                   // pedir um stop
+
+    while(UCB0CTLW0 & UCTXSTP);             // Espera o stop ser enviado para retornar
+
+    return 0;                               // Retorno = 0 significa sucesso
+}
 
 int __I2C_rxbyte_m0(byte slave_address) {
+    UCB0CTL1 &= ~UCTR;                      // receiver mode
+    UCB0I2CSA = slave_address;              // slave address
+
+    //Espero a linha estar desocupada.
+    while (UCB1STAT & UCBBUSY);
+
+    UCB0CTL1 |= UCTXSTT;                    // start condition
+
+    while((UCB0CTL1 & UCTXSTT) &&           // Aguarda fim do START/NACK
+          !(UCB0IFG & UCNACKIFG));
+
+    if (UCB0IFG & UCNACKIFG) {
+        UCB0CTLW0 |= UCTXSTP;               // pedir um stop
+        while(UCB0CTLW0 & UCTXSTP);         // eu peço um stop e espero o stop
+        return -1;                          // ser enviado antes de retornar
+    }
+    UCB0CTLW0 |= UCTXSTP;                   // pedir um stop
+    while(!(UCB0IFG & UCRXIFG));            // Aguarda a leitura
+
+    int data = UCB0RXBUF<<8;                // Lê dados do buffer de recepção
+
+    while(UCB0CTLW0 & UCTXSTP);             // Espera o stop ser enviado para retornar
+
+    return data;                            // Retorna os dados
+}
+
+int __I2C_rxword_m0(byte slave_address, word* dest) {
     UCB0CTL1 &= ~UCTR;                      // receiver mode
     UCB0I2CSA = slave_address;              // slave address
 
@@ -74,7 +127,8 @@ int __I2C_rxbyte_m0(byte slave_address) {
 
     while(UCB0CTLW0 & UCTXSTP);             // Espera o stop ser enviado para retornar
 
-    return data;                            // Retorna os dados
+    *dest = data;
+    return 0;                               // Retorna os dados
 }
 
 int __I2C_txbyte_m1(byte slave_address, byte data) {
@@ -82,7 +136,15 @@ int __I2C_txbyte_m1(byte slave_address, byte data) {
 }
 
 int __I2C_rxbyte_m1(byte slave_address) {
+    return -1;
+}
+
+int __I2C_txword_m1(byte slave_address, word data) {
     return 1;
+}
+
+int __I2C_rxword_m1(byte slave_address, word* dest) {
+    return -1;
 }
 
 void I2C_config(byte module, byte master, byte internal_res, unsigned int baud_rate) {
@@ -91,6 +153,15 @@ void I2C_config(byte module, byte master, byte internal_res, unsigned int baud_r
     }
     if (module == 1) {
         __I2C_config_m1(master, internal_res, baud_rate);
+    }
+}
+
+int  I2C_txword(byte module, byte slave_address, word data) {
+    if (module == 0) {
+        return __I2C_txword_m0(slave_address, data);
+    }
+    if (module == 1) {
+        return __I2C_txword_m1(slave_address, data);
     }
 }
 
@@ -109,5 +180,14 @@ int I2C_rxbyte(byte module, byte slave_address) {
     }
     if (module == 1) {
         return __I2C_rxbyte_m1(slave_address);
+    }
+}
+
+int I2C_rxword(byte module, byte slave_address, word* dest) {
+    if (module == 0) {
+        return __I2C_rxword_m0(slave_address, dest);
+    }
+    if (module == 1) {
+        return __I2C_rxword_m1(slave_address, dest);
     }
 }
