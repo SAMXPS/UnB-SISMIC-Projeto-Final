@@ -6,3 +6,4 @@ Includes/*
 .settings*
 *.cmd
 .launches*
+/Debug/
