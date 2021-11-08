@@ -9,8 +9,45 @@
 #include "HDC_utils.h"
 #include "DELAY_utils.h"
 
+void toDec(unsigned int value, byte decimal_places, char* buffer);
+void displayData(int tempC10, int humidity100);
 long int temp_c10;
 long int hum100;
+
+int main(void) {
+    // Stop watchdog timer
+    WDTCTL = WDTPW | WDTHOLD;
+    I2C_config(0, 1, 1, 9600);
+    LCD_config();
+    LED_config();
+
+    HDC_config();
+    word temperature;
+    word humidity;
+
+    __enable_interrupt();
+    while (1) {
+        if (HDC_read(&temperature, &humidity)) {
+            temp_c10 = (((long int) temperature) * 1650)/(((long int) 1) << 16) - 400;
+            hum100 = (((long int) humidity) * 100)/(((long int) 1) << 16);
+            if (temp_c10 > 300) {
+                LED2_ON;
+            } else {
+                LED2_OFF;
+            }
+            displayData(temp_c10, hum100);
+            LED1_ON;
+        } else {
+            LED1_OFF;
+            displayData(0, 0);
+        }
+
+        // Tempo extra, por que não?
+        delay_us(50000);
+        delay_us(50000);
+    }
+
+}
 
 void toDec(unsigned int value, byte decimal_places, char* buffer) {
     while(decimal_places){
@@ -34,35 +71,5 @@ void displayData(int tempC10, int humidity100) {
     modo_01[4] = '.';
 
     LCD_print(modo_01);
-}
-
-int main(void) {
-    // Stop watchdog timer
-    WDTCTL = WDTPW | WDTHOLD;
-    I2C_config(0, 1, 1, 9600);
-    LCD_config();
-    LED_config();
-    HDC_config();
-    word temperature;
-    word humidity;
-
-    __enable_interrupt();
-    while (1) {
-        if (HDC_read(&temperature, &humidity)) {
-            temp_c10 = (((long int) temperature) * 1650)/(((long int) 1) << 16) - 400;
-            hum100 = (((long int) humidity) * 100)/(((long int) 1) << 16);
-            if (temp_c10 > 300) {
-                LED2_ON;
-            } else {
-                LED2_OFF;
-            }
-            displayData(temp_c10, hum100);
-            LED1_ON;
-        } else {
-            LED1_OFF;
-            displayData(0, 0);
-        }
-    }
-
 }
 

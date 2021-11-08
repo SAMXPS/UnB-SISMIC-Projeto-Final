@@ -26,6 +26,9 @@ void HDC_config() {
     //– Set Bit[9:8] to 01 for 11 bit resolution.
     //– Set Bit[9:8] to 10 for 8 bit resolution.
 
+    // 100 ms delay for module initialization
+    delay_us(50000);
+    delay_us(50000);
     if (I2C_txbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS, HDC_REG_CONF)){
         // ERROR
     }
@@ -50,10 +53,16 @@ int  HDC_read(word* temperature, word* humidity) {
         return 0;
     }
 
+    // Tempo extra, por que não?
+    delay_us(6500);
+
     // Escrevendo endereço do registrador de humidade no Pointer Register
     if (I2C_txbyte(HDC_I2C_PORT, HDC_I2C_ADDRESS, HDC_REG_HUMITY)){
         return 0;
     }
+
+    // Tempo extra, por que não?
+    delay_us(6500);
 
     if (I2C_rxword(HDC_I2C_PORT, HDC_I2C_ADDRESS, humidity) == -1) {
         return 0;
