@@ -13,6 +13,7 @@
 void displayData(int tempC10, int humidity100);
 long int temp_c10;
 long int hum100;
+char modo_01[] = "T=XX.XC\nH=XX%";
 
 int main(void) {
     // Stop watchdog timer
@@ -43,7 +44,7 @@ int main(void) {
         }
 
         ESP_restart();
-        ESP_send_data("Hello World");
+        ESP_send_data(modo_01);
 
         // Tempo extra, por que não?
         delay_s(20);
@@ -52,7 +53,6 @@ int main(void) {
 }
 
 void displayData(int tempC10, int humidity100) {
-    static char modo_01[] = "T=XX.XºC\nH=XX%";
 
     /*
      * 0 1 2 3 4 5 6 7 8 9 A B C D E F
@@ -61,7 +61,7 @@ void displayData(int tempC10, int humidity100) {
      * */
 
     toDec(tempC10, 3, modo_01 + 2);
-    toDec(humidity100, 2, modo_01 + 11);
+    toDec(humidity100, 2, modo_01 + 10);
     modo_01[5] = modo_01[4];
     modo_01[4] = '.';
 
