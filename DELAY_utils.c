@@ -15,3 +15,17 @@ void delay_us(unsigned int time_us) {
     //Stops the timer
     TA0CTL = MC_0 | TACLR;
 }
+
+void delay_ms(unsigned int time_ms) {
+    int i;
+    for (i=0;i<time_ms;i++) {
+        delay_us(1000);
+    }
+}
+
+void delay_s(unsigned int time_s) {
+    int i;
+    for (i=0;i<time_s;i++) {
+        delay_ms(1000);
+    }
+}

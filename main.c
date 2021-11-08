@@ -7,9 +7,9 @@
 #include "LCD_utils.h"
 #include "LED_utils.h"
 #include "HDC_utils.h"
+#include "ESP_utils.h"
 #include "DELAY_utils.h"
 
-void toDec(unsigned int value, byte decimal_places, char* buffer);
 void displayData(int tempC10, int humidity100);
 long int temp_c10;
 long int hum100;
@@ -42,18 +42,13 @@ int main(void) {
             displayData(0, 0);
         }
 
+        ESP_restart();
+        ESP_send_data("Hello World");
+
         // Tempo extra, por que não?
-        delay_us(50000);
-        delay_us(50000);
+        delay_s(20);
     }
 
-}
-
-void toDec(unsigned int value, byte decimal_places, char* buffer) {
-    while(decimal_places){
-        buffer[--decimal_places] = value%10 + '0';
-        value/=10;
-    }
 }
 
 void displayData(int tempC10, int humidity100) {
